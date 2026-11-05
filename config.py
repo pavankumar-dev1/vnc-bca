@@ -35,13 +35,11 @@ class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     UPLOAD_FOLDER = os.path.join(BASE_DIR, "static", "uploads")
 
-    # --- Admin bootstrap credentials (all optional) ---
-    # The app creates a default admin account (admin / Admin@123) the very
-    # first time it runs if no admin exists yet - no setup required. These
-    # two variables let you override that default username/password hash
-    # instead, but you never have to set them.
+    # --- Admin bootstrap credentials ---
+    # No default administrator is ever created. Set a unique username and
+    # Werkzeug password hash, or run: flask --app run create-admin
     ADMIN_USERNAME = os.environ.get("ADMIN_USERNAME")
-    # A Werkzeug PBKDF2 hash, e.g. produced by:
+    # A Werkzeug password hash, e.g. produced by:
     #   python -c "from werkzeug.security import generate_password_hash as g; print(g('yourpassword'))"
     ADMIN_PASSWORD_HASH = os.environ.get("ADMIN_PASSWORD_HASH")
 
