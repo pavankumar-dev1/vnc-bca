@@ -89,16 +89,24 @@ runtime.txt
 
 5. Visit http://127.0.0.1:5000.
 
+## Create the first administrator
+
+The application does **not** create a default administrator account. From a trusted terminal in the project directory, run:
+
+```bash
+flask --app run create-admin
+```
+
+Follow the prompts to choose a username, role and strong unique password. The password is stored as a hash. Create the account before opening the admin login to the public.
+
 ## Important deployment security
 
-- **Never deploy with a known or shared default administrator password.**
-- Create or configure a unique administrator credential before exposing the application publicly.
-- Change any bootstrap credentials immediately after first login.
-- Set a strong, unique `SECRET_KEY` and enable secure cookies when using HTTPS.
+- Never deploy with a known or shared administrator password.
+- Set a strong, unique `SECRET_KEY` in the deployment environment. Generate one with `python -c "import secrets; print(secrets.token_hex(32))"`.
+- Enable secure cookies when serving over HTTPS.
 - Keep `.env`, database files, uploaded private data and secrets out of version control.
 - Use HTTPS and maintain backups of the production database and uploads.
-
-Check the current application bootstrap/authentication implementation before deploying; deployment credentials must be unique and must not be copied from example documentation.
+- If an earlier deployment used the old default administrator credentials, log in from a trusted environment and change or replace that account immediately. This code change does not remove existing accounts from an already-created database.
 
 ## Responsible use
 
