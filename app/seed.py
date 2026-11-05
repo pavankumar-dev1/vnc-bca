@@ -11,8 +11,6 @@ edits unless explicitly requested.
 """
 from datetime import date
 
-from werkzeug.security import generate_password_hash
-
 from . import models
 from .utils import list_images
 
