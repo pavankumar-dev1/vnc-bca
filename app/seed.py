@@ -37,33 +37,29 @@ def _seed_images(album_category: str, album_name: str, image_subfolder: str) -> 
         ))
 
 
-DEFAULT_ADMIN_USERNAME = "admin"
-DEFAULT_ADMIN_PASSWORD = "Admin@123"
-
-
 def _seed_admin_user(app) -> None:
     if models.AdminUser.query.filter_by(role="admin").first():
-        pass  # An admin already exists - never recreate or overwrite it.
+        _seed_developer_user(app)
+        return
+
+    username = app.config.get("ADMIN_USERNAME") or "admin"
+    password_hash = app.config.get("ADMIN_PASSWORD_HASH")
+
+    if not password_hash:
+        # Never create a publicly known default administrator credential.
+        # The operator must create the first account explicitly with:
+        #   flask --app run create-admin
+        app.logger.warning(
+            "No administrator account exists. No default account was created. "
+            "Run 'flask --app run create-admin' from a trusted environment."
+        )
     else:
-        # Prefer an explicitly configured hash/username if the operator set
-        # one, but this is entirely optional - if nothing is configured we
-        # still create a working default account so the app is usable
-        # immediately with zero setup.
-        username = app.config.get("ADMIN_USERNAME") or DEFAULT_ADMIN_USERNAME
-        password_hash = app.config.get("ADMIN_PASSWORD_HASH")
-
-        if not password_hash:
-            password_hash = generate_password_hash(DEFAULT_ADMIN_PASSWORD)
-            app.logger.warning(
-                "No admin account existed, so one was created automatically - "
-                "username '%s', password '%s'. Log in and change this password "
-                "immediately from the 'Change Password' page.",
-                username, DEFAULT_ADMIN_PASSWORD,
-            )
-        else:
-            app.logger.info("Seeded admin user '%s' from ADMIN_PASSWORD_HASH.", username)
-
-        db.session.add(models.AdminUser(username=username, password_hash=password_hash, role="admin"))
+        db.session.add(models.AdminUser(
+            username=username,
+            password_hash=password_hash,
+            role="admin",
+        ))
+        app.logger.info("Seeded administrator '%s' from ADMIN_PASSWORD_HASH.", username)
 
     _seed_developer_user(app)
 
