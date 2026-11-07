@@ -1,5 +1,7 @@
 # Environment / secrets
 .env
+.env.*
+!.env.example
 *.env.local
 
 # Python
@@ -12,9 +14,20 @@ venv/
 env/
 
 # Flask / instance data
+instance/*.db
+instance/*.sqlite
+instance/*.sqlite3
 instance/*.db-journal
 instance/*.db-wal
 instance/*.db-shm
+
+# Test and coverage artifacts
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
 
 # OS / editor cruft
 .DS_Store
