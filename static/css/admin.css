@@ -214,3 +214,33 @@ input[type="checkbox"].form-control {
     .admin-sidebar { width: 100%; height: auto; position: relative; }
     .admin-main { padding: 25px; }
 }
+
+
+/* Logout is a state-changing action, so it is submitted as a CSRF-protected form. */
+.admin-sidebar .sidebar-logout {
+    margin: 0;
+}
+
+.admin-sidebar .sidebar-logout button {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 12px 25px;
+    color: rgba(255,255,255,0.8);
+    font-family: inherit;
+    font-weight: 600;
+    font-size: 0.92rem;
+    text-align: left;
+    background: transparent;
+    border: 0;
+    cursor: pointer;
+}
+
+.admin-sidebar .sidebar-logout button:hover,
+.admin-sidebar .sidebar-logout button:focus-visible {
+    background: rgba(255,255,255,0.08);
+    color: #fff;
+    border-left: 4px solid var(--accent);
+    padding-left: 21px;
+}
