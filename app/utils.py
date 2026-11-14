@@ -114,12 +114,19 @@ def delete_upload(relative_path: str) -> None:
     """
     if not relative_path or not relative_path.startswith("uploads/"):
         return
-    full_path = os.path.join(current_app.static_folder, relative_path)
+    upload_root = os.path.realpath(os.path.join(current_app.static_folder, "uploads"))
+    full_path = os.path.realpath(os.path.join(current_app.static_folder, relative_path))
+
     try:
+        if os.path.commonpath((upload_root, full_path)) != upload_root:
+            current_app.logger.warning(
+                "Refusing to delete upload outside uploads directory"
+            )
+            return
         if os.path.isfile(full_path):
             os.remove(full_path)
-    except OSError:
-        current_app.logger.warning("Could not delete upload: %s", full_path)
+    except (OSError, ValueError):
+        current_app.logger.warning("Could not safely delete upload: %s", relative_path)
 
 
 def list_images(subfolder: str) -> list[str]:
