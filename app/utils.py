@@ -51,12 +51,54 @@ def allowed_file(filename: str, allowed: set) -> bool:
     return bool(filename) and _extension(filename) in allowed
 
 
+IMAGE_FORMATS = {
+    "jpg": "JPEG",
+    "jpeg": "JPEG",
+    "png": "PNG",
+    "gif": "GIF",
+    "webp": "WEBP",
+}
+
+
+def _validate_upload_content(file_storage, ext: str) -> None:
+    """Check that uploaded bytes match the permitted file extension."""
+    stream = file_storage.stream
+    stream.seek(0)
+
+    if ext == "pdf":
+        header = stream.read(1024)
+        stream.seek(0)
+        if b"%PDF-" not in header:
+            raise ValueError("The uploaded file is not a valid PDF.")
+        return
+
+    expected_format = IMAGE_FORMATS.get(ext)
+    if expected_format is None:
+        raise ValueError("No content validator is configured for this file type.")
+
+    try:
+        from PIL import Image
+
+        with Image.open(stream) as image:
+            actual_format = image.format
+            image.verify()
+    except ImportError as exc:
+        raise RuntimeError("Pillow is required to validate image uploads.") from exc
+    except Exception as exc:
+        raise ValueError("The uploaded file is not a valid image.") from exc
+    finally:
+        stream.seek(0)
+
+    if actual_format != expected_format:
+        raise ValueError("File contents do not match the filename extension.")
+
+
 def save_upload(file_storage, subfolder: str, allowed: set = IMAGE_EXTENSIONS):
     """Validate and save an uploaded file under static/uploads/<subfolder>/.
 
     Returns the path stored in the DB, relative to the static folder
     (e.g. "uploads/faculty/ab12cd34.jpg"), or None if no file was given.
-    Raises ValueError if the file's extension is not allowed.
+    Raises ValueError if the extension or uploaded file contents are invalid.
     """
     if not file_storage or not file_storage.filename:
         return None
@@ -66,6 +108,7 @@ def save_upload(file_storage, subfolder: str, allowed: set = IMAGE_EXTENSIONS):
         raise ValueError("That file type is not allowed.")
 
     ext = _extension(filename)
+    _validate_upload_content(file_storage, ext)
     unique_name = f"{uuid.uuid4().hex}.{ext}"
 
     upload_dir = os.path.join(current_app.static_folder, "uploads", subfolder)
@@ -83,10 +126,9 @@ def save_upload(file_storage, subfolder: str, allowed: set = IMAGE_EXTENSIONS):
 def _try_compress_image(path: str, ext: str, max_dimension: int = 1600, quality: int = 82) -> None:
     """Best-effort downsize/re-encode of an uploaded image to save space.
 
-    No-ops silently if Pillow isn't installed or the file can't be
-    processed - the original upload is left untouched either way, so
-    this is purely an optional size optimization, never a hard
-    requirement for uploads to work.
+    The upload validator requires Pillow for image files. Compression
+    remains best-effort: if processing fails, the verified original upload
+    is left untouched.
     """
     try:
         from PIL import Image
