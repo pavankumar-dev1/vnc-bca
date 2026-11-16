@@ -786,8 +786,8 @@ def _escape_csv_row(row):
     escaped = {}
     for column, value in row.items():
         if isinstance(value, str):
-            stripped = value.lstrip(" \\t\\r\\n")
-            if value.startswith(("\\t", "\\r", "\\n")) or stripped.startswith(("=", "+", "-", "@")):
+            stripped = value.lstrip(" \t\r\n")
+            if value.startswith(("\t", "\r", "\n")) or stripped.startswith(("=", "+", "-", "@")):
                 value = "'" + value
         escaped[column] = value
     return escaped
