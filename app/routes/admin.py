@@ -781,6 +781,18 @@ def download_backup():
 # --------------------------------------------------------------------------
 # CSV import / export - Faculty
 # --------------------------------------------------------------------------
+def _escape_csv_row(row):
+    """Prefix spreadsheet formula-like cells so CSV exports open as text."""
+    escaped = {}
+    for column, value in row.items():
+        if isinstance(value, str):
+            stripped = value.lstrip(" \\t\\r\\n")
+            if value.startswith(("\\t", "\\r", "\\n")) or stripped.startswith(("=", "+", "-", "@")):
+                value = "'" + value
+        escaped[column] = value
+    return escaped
+
+
 FACULTY_CSV_COLUMNS = [
     "name", "department", "designation", "qualification",
     "email", "phone", "display_order", "is_leadership",
@@ -795,7 +807,9 @@ def export_faculty_csv():
     writer = csv.DictWriter(buffer, fieldnames=FACULTY_CSV_COLUMNS)
     writer.writeheader()
     for member in faculty_list:
-        writer.writerow({col: getattr(member, col) for col in FACULTY_CSV_COLUMNS})
+        writer.writerow(_escape_csv_row({
+            col: getattr(member, col) for col in FACULTY_CSV_COLUMNS
+        }))
 
     return Response(
         buffer.getvalue(),
@@ -853,13 +867,13 @@ def export_notices_csv():
     writer = csv.DictWriter(buffer, fieldnames=NOTICE_CSV_COLUMNS)
     writer.writeheader()
     for notice in notices_list:
-        writer.writerow({
+        writer.writerow(_escape_csv_row({
             "title": notice.title,
             "description": notice.description,
             "publish_date": notice.publish_date.isoformat() if notice.publish_date else "",
             "expiry_date": notice.expiry_date.isoformat() if notice.expiry_date else "",
             "pinned": notice.pinned,
-        })
+        }))
 
     return Response(
         buffer.getvalue(),
