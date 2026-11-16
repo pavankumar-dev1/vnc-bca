@@ -13,9 +13,9 @@ class CsvFormulaEscapingTests(unittest.TestCase):
             "+SUM(1,2)",
             "-1+2",
             "@SUM(A1:A2)",
-            "\\t=1+1",
-            "\\r=1+1",
-            "\\n=1+1",
+            "\t=1+1",
+            "\r=1+1",
+            "\n=1+1",
             "  =1+1",
         )
 
@@ -69,7 +69,7 @@ class CsvExportRouteTests(unittest.TestCase):
         self.assertEqual(exported["name"], "'" + formula_name)
 
     def test_notice_export_escapes_formula_after_leading_tab(self):
-        formula_description = "\\t=HYPERLINK(\"https://example.invalid\",\"Open\")"
+        formula_description = "\t=HYPERLINK(\"https://example.invalid\",\"Open\")"
         with self.app.app_context():
             models.db.session.add(models.Notice(
                 title="CSV safety test",
@@ -82,5 +82,5 @@ class CsvExportRouteTests(unittest.TestCase):
         self.assertEqual(exported["description"], "'" + formula_description)
 
 
-if __test__ == "__main__":
+if __name__ == "__main__":
     unittest.main()
